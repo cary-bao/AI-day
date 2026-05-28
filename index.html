@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>2026 罗氏诊断中国 超有AI Day</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root { --roche-blue: #003da5; --roche-yellow: #ffda00; --slate: #475569; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f8fafc; margin: 0; padding: 0; color: #1e293b; -webkit-user-select: none; }
+    .header { background: linear-gradient(135deg, var(--roche-blue) 0%, #002b75 100%); color: white; padding: 35px 25px 30px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 10px 30px rgba(0,61,165,0.15); }
+    .header h1 { font-size: 22px; margin: 0; letter-spacing: 0.5px; line-height: 1.3; }
+    .header p { opacity: 0.75; font-size: 13px; margin: 6px 0 18px; }
+    .stats-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border-radius: 16px; padding: 12px; display: flex; justify-content: space-around; border: 1px solid rgba(255,255,255,0.18); }
+    .stat-item { text-align: center; width: 50%; }
+    .stat-item:first-child { border-right: 1px solid rgba(255,255,255,0.2); }
+    .stat-value { font-size: 24px; font-weight: bold; color: var(--roche-yellow); display: block; }
+    .stat-label { font-size: 11px; opacity: 0.9; }
+    .content { padding: 20px; max-width: 550px; margin: auto; }
+    .section-title { font-weight: bold; margin: 25px 0 12px; color: var(--roche-blue); font-size: 15px; display: flex; align-items: center; gap: 6px; }
+    
+    .action-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); border-top: 5px solid var(--roche-yellow); margin-bottom: 25px; display: none; }
+    .action-box h3 { margin-top: 0; color: var(--roche-blue); font-size: 16px; }
+    video { width: 100%; border-radius: 12px; background: #000; margin-top: 10px; display: none; }
+
+    .journey-container { position: relative; padding-left: 25px; margin-left: 5px; }
+    .journey-container::before { content: ''; position: absolute; left: 8px; top: 0; width: 2px; height: 100%; background: #e2e8f0; }
+    .journey-item { position: relative; margin-bottom: 20px; background: white; padding: 12px 18px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
+    .journey-item::after { content: ''; position: absolute; left: -21px; top: 18px; width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; border: 3px solid #f8fafc; }
+    .journey-item.active::after { background: var(--roche-blue); box-shadow: 0 0 8px var(--roche-blue); }
+    .journey-title { font-weight: bold; font-size: 14px; color: #334155; }
+    .journey-desc { font-size: 12px; color: var(--slate); display: block; }
+    .badge { float: right; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; background: #f1f5f9; color: #64748b; }
+    .active .badge { background: #dcfce7; color: #166534; }
+
+    .redeem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .redeem-card { background: white; padding: 15px 12px; border-radius: 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.01); border: 1px solid #f1f5f9; }
+    .redeem-card i { font-size: 22px; color: var(--roche-blue); margin-bottom: 8px; }
+    .redeem-card strong { display: block; font-size: 13px; color: #1e293b; }
+    .redeem-card small { color: #ef4444; font-weight: bold; font-size: 12px; display: block; margin: 2px 0 8px; }
+    .btn { background: var(--roche-blue); color: white; border: none; padding: 8px 12px; border-radius: 8px; width: 100%; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.15s; }
+    .btn:active { transform: scale(0.97); }
+
+    .voucher-list { display: flex; flex-direction: column; gap: 12px; }
+    .voucher-ticket { background: linear-gradient(to right, #ffffff 70%, #f8fafc 100%); border-radius: 12px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; position: relative; overflow: hidden; transition: 0.3s; }
+    .voucher-ticket.used { opacity: 0.55; background: #f1f5f9; border-color: #cbd5e1; }
+    .voucher-left { padding: 15px; flex-grow: 1; border-right: 2px dashed #cbd5e1; }
+    .voucher-right { width: 90px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0 10px; }
+    .voucher-title { font-weight: bold; font-size: 15px; color: var(--roche-blue); margin: 0 0 4px; }
+    .voucher-time { font-size: 11px; color: #94a3b8; }
+    .voucher-ticket::before, .voucher-ticket::after { content: ''; position: absolute; right: 86px; width: 10px; height: 10px; background: #f8fafc; border-radius: 50%; border: 1px solid #e2e8f0; }
+    .voucher-ticket::before { top: -6px; } .voucher-ticket::after { bottom: -6px; }
+    .btn-verify { background: #ef4444; color: white; border: none; padding: 8px 10px; border-radius: 6px; width: 100%; font-weight: bold; font-size: 12px; cursor: pointer; box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3); }
+    .btn-verify:active { transform: scale(0.95); }
+    .status-used { color: #64748b; font-weight: bold; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>2026 罗氏诊断中国<br>超有AI Day</h1>
+    <p><i class="fa-solid fa-wand-magic-sparkles"></i> 专属员工互动签到系统</p>
+    <div class="stats-card">
+      <div class="stat-item">
+        <span class="stat-value" id="p-avail">0 Pt</span>
+        <span class="stat-label"><i class="fa-solid fa-wallet"></i> 可用积分</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="p-total">0 Pt</span>
+        <span class="stat-label"><i class="fa-solid fa-chart-line"></i> 总计获取 (满分50)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="action-box" id="action-box">
+      <h3 id="action-title"><i class="fa-solid fa-bell"></i> 提示</h3>
+      <p id="action-msg" style="font-size: 13px; color: #166534; font-weight: bold; margin: 5px 0;"></p>
+      <video id="action-video" controls poster="https://via.placeholder.com/600x340/003da5/FFFFFF?text=Roche+AI+Day+Video">
+        <source id="video-source" src="" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="section-title"><i class="fa-solid fa-route"></i> 我的 AI 探索地图</div>
+    <div class="journey-container">
+      <div id="node-case_study" class="journey-item">
+        <span class="badge" id="badge-case_study">进度: 0/21</span>
+        <div class="journey-title">AI 案例大赛集邮</div>
+        <span class="journey-desc">满5个解锁10分，最高可累积 20 积分</span>
+      </div>
+      <div id="node-ekh" class="journey-item">
+        <span class="badge" id="badge-ekh">20 积分</span>
+        <div class="journey-title">Knowledge Hub 体验</div>
+        <span class="journey-desc">扫码点亮直接获得 20 积分</span>
+      </div>
+      <div id="node-ai_journey" class="journey-item">
+        <span class="badge" id="badge-ai_journey">10 积分</span>
+        <div class="journey-title">H2 活动计划</div>
+        <span class="journey-desc">扫码点亮直接获得 10 积分</span>
+      </div>
+    </div>
+
+    <div class="section-title"><i class="fa-solid fa-gift"></i> 积分奖赏兑换处</div>
+    <div class="redeem-grid">
+      <div class="redeem-card">
+        <i class="fa-solid fa-face-smile-wink"></i>
+        <strong>AIGC 互动拍照</strong>
+        <small>20 积分</small>
+        <button class="btn" onclick="redeemPrize('AIGC 互动拍照', 20)">消耗积分兑换</button>
+      </div>
+      <div class="redeem-card">
+        <i class="fa-solid fa-video"></i>
+        <strong>360° 全景拍摄</strong>
+        <small>20 积分</small>
+        <button class="btn" onclick="redeemPrize('360° 全景拍摄', 20)">消耗积分兑换</button>
+      </div>
+      <div class="redeem-card" style="grid-column: span 2;">
+        <i class="fa-solid fa-circle-dollar-to-slot"></i>
+        <strong>抓娃娃机游戏币 (5枚)</strong>
+        <small>10 积分</small>
+        <button class="btn" onclick="redeemPrize('抓娃娃币 (5枚)', 10)">消耗积分兑换</button>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:30px;"><i class="fa-solid fa-ticket"></i> 罗氏专属活动券</div>
+    <div id="voucher-container" class="voucher-list"></div>
+    
+    <p style="text-align: center; color: #94a3b8; font-size: 11px; margin-top: 40px; border-top: 1px dashed #e2e8f0; padding-top: 15px;">© 2026 Roche Diagnostics China | EverydayAI</p>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. 完整视频数据库直链配置
+    // ==========================================
+    const VIDEO_DB = {
+      "case_1": "https://cary-bao.github.io/muisc/1_%E6%95%B0%E5%AD%97%E5%8C%96%E6%88%98%E7%95%A5%E7%86%94%E7%82%89%EF%BC%9A%E7%94%A8AI%E9%94%BB%E9%80%A0%E5%95%86%E4%B8%9A%E4%BB%B7%E5%80%BC.mp4",
+      "case_2": "https://cary-bao.github.io/muisc/2_AI%E9%A9%B1%E5%8A%A8%E7%9A%84%E4%BB%AA%E5%99%A8%E5%8D%87%E7%BA%A7%E8%87%AA%E5%8A%A8%E5%8C%96.mp4",
+      "case_3": "https://cary-bao.github.io/muisc/3_%E5%88%9B%E9%80%A0%E5%A5%87%E8%BF%B9%E7%9A%8410%E5%B0%8F%E6%97%B6%EF%BC%9A%E7%94%A8AI%E6%89%93%E7%A0%B4%E8%A1%8C%E6%94%BF%E7%93%B6%E9%A2%88.mp4",
+      "case_4": "https://cary-bao.github.io/muisc/4_AI%E9%A9%B1%E5%8A%A8%E7%9A%84%E7%9F%A9%E9%98%B5%E6%95%B0%E6%8D%AE%E6%A0%B8%E5%AF%B9.mp4",
+      "case_5": "https://cary-bao.github.io/muisc/5_%E6%A1%88%E4%BE%8B%E8%A7%A3%E6%9E%90%EF%BC%9A%E5%A4%BA%E5%9B%9E%E6%97%B6%E9%97%B4%E7%9A%84AI%E6%99%BA%E8%83%BD%E4%BD%93.mp4",
+      "case_6": "https://cary-bao.github.io/muisc/6_%E7%BD%97%E6%B0%8FAI%E8%87%AA%E5%8A%A8%E5%8C%96%E4%BB%AA%E5%99%A8%E6%B6%88%E6%AF%92%E7%AE%A1%E7%90%86.mp4",
+      "case_7": "https://cary-bao.github.io/muisc/7_%E5%91%8A%E5%88%AB%E9%82%AE%E4%BB%B6%E6%90%AC%E8%BF%90%E5%B7%A5%EF%BC%9AAI%E5%8A%A0%E9%80%9F%E5%BA%93%E5%AD%98%E5%91%A8%E8%BD%AC.mp4",
+      "case_8": "https://cary-bao.github.io/muisc/8_AI%E9%A9%B1%E5%8A%A8%E7%9A%84%E5%8F%AF%E8%A7%86%E5%8C%96%EF%BC%9A%E9%87%8D%E5%A1%91%E5%A4%8D%E6%9D%82%E6%A6%82%E5%BF%B5%E5%9F%B9%E8%AE%AD.mp4",
+      "case_9": "https://cary-bao.github.io/muisc/9_%E5%8C%BB%E7%96%97%E8%AE%BE%E5%A4%87%E6%82%AC%E6%A1%88%EF%BC%9AAI%E5%8C%96%E8%BA%AB%E8%AF%8A%E6%96%AD%E5%A4%A7%E8%84%91.mp4",
+      "case_10": "https://cary-bao.github.io/muisc/10_AI%E6%99%BA%E9%80%A0%E8%80%85%EF%BC%9A%E4%BB%8E%E4%BC%A0%E7%BB%9FRPA%E5%88%B0%E8%87%AA%E4%B8%BB%E8%B4%A2%E5%8A%A1.mp4",
+      "case_11": "https://cary-bao.github.io/muisc/11_%E5%B0%8F%E6%9C%AA%EF%BC%9A%E9%87%8D%E5%A1%91%E4%BC%81%E4%B8%9A%E5%9F%B9%E8%AE%AD%E7%9A%84AI%E6%95%99%E7%BB%83.mp4",
+      "case_12": "https://cary-bao.github.io/muisc/12_%E5%91%8A%E5%88%AB%E5%A4%8D%E5%88%B6%E7%B2%98%E8%B4%B4%EF%BC%9AAI%E8%87%AA%E5%8A%A8%E5%8C%96%E6%A1%88%E4%BE%8B%E8%A7%A3%E6%9E%90.mp4",
+      "case_13": "https://cary-bao.github.io/muisc/13_AI_%E8%B5%8B%E8%83%BD%E4%BC%81%E4%B8%9A%E8%A7%86%E9%A2%91.mp4",
+      "case_14": "https://cary-bao.github.io/muisc/14_AI%E6%A1%88%E4%BE%8B%E8%A7%A3%E6%9E%90%EF%BC%9AKOL_360%C2%B0%E5%AD%A6%E6%9C%AF%E7%94%BB%E5%83%8F.mp4",
+      "case_15": "https://cary-bao.github.io/muisc/15_%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E6%99%BA%E6%A3%80%E5%BD%92%E6%A1%A3%E9%97%AD%E7%8E%AF%E5%B7%A5%E4%BD%9C%E5%8F%B0.mp4",
+      "case_16": "https://cary-bao.github.io/muisc/16_AI%E8%87%AA%E5%8A%A8%E5%8C%96%E6%A1%88%E4%BE%8B%EF%BC%9A%E9%87%8D%E5%A1%91%E4%BA%BA%E5%B7%A5%E6%A0%B8%E6%9F%A5.mp4",
+      "case_17": "https://cary-bao.github.io/muisc/17_AI%E5%9C%A8%E8%A1%8C%E5%8A%A8%EF%BC%9A%E4%BC%98%E5%8C%96ServiceNow%E5%B7%A5%E5%8D%95%E5%AE%A1%E6%9F%A5.mp4",
+      "case_18": "https://cary-bao.github.io/muisc/18_%E9%AB%98%E9%A3%8E%E9%99%A9%E8%A3%85%E6%9C%BA%E4%B8%AD%E7%9A%84AI%E5%BA%94%E7%94%A8%EF%BC%9A%E5%94%A4%E9%86%92%E6%B2%89%E7%9D%A1%E7%9A%84%E6%96%87%E6%A1%A3.mp4",
+      "case_19": "https://cary-bao.github.io/muisc/19_AI%E5%AE%9E%E6%88%98%EF%BC%9A%E8%87%AA%E5%8A%A8%E7%94%9F%E6%88%90%E7%BB%8F%E9%94%80%E5%95%86%E9%80%9A%E7%9F%A5%E5%87%BD.mp4",
+      "case_20": "https://cary-bao.github.io/muisc/20_AI%E5%AF%B9%E5%86%B3%E5%8C%BB%E7%96%97%E9%94%80%E5%94%AE%E5%AE%A1%E6%89%B9%E7%93%B6%E9%A2%88.mp4",
+      "case_21": "https://cary-bao.github.io/muisc/21_%E9%80%83%E7%A6%BB%E4%BB%B7%E6%A0%BC%E6%88%98%EF%BC%9A%E4%B8%93%E4%B8%9AAI%E7%9A%84%E7%A0%B4%E5%B1%80%E4%B9%8B%E8%B7%AF.mp4"
+    };
+
+    // ==========================================
+    // 2. 本地缓存数据初始化
+    // ==========================================
+    let localData = JSON.parse(localStorage.getItem('rocheAiDayData')) || {
+      points: { total: 0, available: 0, used: 0 },
+      checkIns: [],
+      redemptions: []
+    };
+
+    function saveData() {
+      localStorage.setItem('rocheAiDayData', JSON.stringify(localData));
+    }
+
+    // ==========================================
+    // 3. 核心逻辑：处理扫码进入时的打卡
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const station = urlParams.get('station');
+
+      if (station) {
+        processCheckIn(station);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+      
+      renderUI();
+    });
+
+    function processCheckIn(station) {
+      const actionBox = document.getElementById('action-box');
+      const actionTitle = document.getElementById('action-title');
+      const actionMsg = document.getElementById('action-msg');
+      const videoTag = document.getElementById('action-video');
+      
+      if (localData.checkIns.includes(station)) {
+        actionBox.style.display = 'block';
+        actionTitle.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#eab308"></i> 提示';
+        actionMsg.innerText = "您已经点亮过该环节啦，快去探索其他站点吧！";
+        return;
+      }
+
+      let pointsGained = 0;
+      let msg = "";
+
+      if (station.startsWith('case_')) {
+        const caseCount = localData.checkIns.filter(s => s.startsWith('case_')).length + 1;
+        
+        if (caseCount < 5) {
+          msg = "打卡成功！已收集 " + caseCount + " 个案例。集满 5 个即可解锁 10 基础分！";
+        } else if (caseCount === 5) {
+          pointsGained = 10;
+          msg = "🎉 目标达成！集满 5 个案例，成功斩获 10 积分！后续每多看 1 个得 2 分。";
+        } else if (caseCount > 5 && caseCount <= 10) {
+          pointsGained = 2;
+          msg = "🎁 额外奖励！获得 2 积分。当前案例集邮总积分：" + (10 + (caseCount - 5) * 2) + " 分。";
+        } else {
+          msg = "打卡成功！您已阅读案例 #" + caseCount + "。（案例集邮积分已达上限 20 分）";
+        }
+        
+        actionTitle.innerHTML = '<i class="fa-solid fa-trophy" style="color:var(--roche-yellow)"></i> 案例大赛作品 #' + station.split('_')[1];
+        
+        if (VIDEO_DB[station]) {
+          document.getElementById('video-source').src = VIDEO_DB[station];
+          videoTag.load();
+          videoTag.style.display = 'block';
+        } else {
+          videoTag.style.display = 'none';
+        }
+      } 
+      else if (station === 'ekh') {
+        pointsGained = 20;
+        msg = "🎉 成功打卡 Knowledge Hub！恭喜获得 20 积分！";
+        actionTitle.innerHTML = '<i class="fa-solid fa-database" style="color:#1a73e8"></i> Enterprise Knowledge Hub';
+        videoTag.style.display = 'none';
+      } 
+      else if (station === 'ai_journey') {
+        pointsGained = 10;
+        msg = "🎉 成功打卡下半年 AI Journey 计划！恭喜获得 10 积分！";
+        actionTitle.innerHTML = '<i class="fa-solid fa-map-location-dot" style="color:#e11d48"></i> H2 活动计划';
+        videoTag.style.display = 'none';
+      }
+
+      localData.checkIns.push(station);
+      localData.points.total += pointsGained;
+      localData.points.available += pointsGained;
+      saveData();
+
+      actionMsg.innerText = msg;
+      actionBox.style.display = 'block';
+    }
+
+    // ==========================================
+    // 4. 渲染界面
+    // ==========================================
+    function renderUI() {
+      document.getElementById('p-avail').innerText = localData.points.available + " Pt";
+      document.getElementById('p-total').innerText = localData.points.total + " Pt";
+
+      let caseCount = 0;
+      localData.checkIns.forEach(s => {
+        if (s.startsWith('case_')) {
+          caseCount++;
+        } else {
+          const node = document.getElementById('node-' + s);
+          if (node) { node.classList.add('active'); document.getElementById('badge-' + s).innerText = "已完成"; }
+        }
+      });
+      document.getElementById('badge-case_study').innerText = "进度: " + caseCount + "/21";
+      if (caseCount >= 5) document.getElementById('node-case_study').classList.add('active');
+
+      const vContainer = document.getElementById('voucher-container');
+      if (localData.redemptions.length > 0) {
+        let html = '';
+        const reversedList = [...localData.redemptions].reverse();
+        
+        reversedList.forEach(ticket => {
+          const isUsed = ticket.status === "已核销";
+          const classUsed = isUsed ? " used" : "";
+          const rightContent = isUsed 
+            ? '<span class="status-used"><i class="fa-solid fa-stamp"></i> 已核销</span>'
+            : `<button class="btn-verify" onclick="verifyTicket('${ticket.id}', '${ticket.prize}')">点击核销</button>`;
+
+          html += `<div class="voucher-ticket${classUsed}">
+                    <div class="voucher-left">
+                      <div class="voucher-title"><i class="fa-solid fa-circle-check" style="color:#22c55e"></i> ${ticket.prize}</div>
+                      <div class="voucher-time">记录时间: ${ticket.time}</div>
+                    </div>
+                    <div class="voucher-right">${rightContent}</div>
+                  </div>`;
+        });
+        vContainer.innerHTML = html;
+      } else {
+        vContainer.innerHTML = '<p style="text-align: center; color: #94a3b8; font-size: 13px; font-style: italic; padding: 15px; background: #fff; border-radius: 12px;">暂无活动券，快去上方消耗积分兑换吧！</p>';
+      }
+    }
+
+    // ==========================================
+    // 5. 兑换逻辑
+    // ==========================================
+    function redeemPrize(prizeName, cost) {
+      if (localData.points.available < cost) {
+        alert("兑换失败：当前可用积分不足，快去打卡点亮地图吧！");
+        return;
+      }
+      if(confirm(`确定消耗 ${cost} 积分兑换 [${prizeName}] 吗？`)) {
+        localData.points.available -= cost;
+        localData.points.used += cost;
+        
+        const d = new Date();
+        const timeStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes()<10?'0':''}${d.getMinutes()}`;
+        
+        localData.redemptions.push({
+          id: Date.now().toString(),
+          prize: prizeName,
+          cost: cost,
+          time: timeStr,
+          status: "未核销"
+        });
+        
+        saveData();
+        alert("兑换成功！活动券已发放，请向工作人员出示并核销。");
+        renderUI();
+      }
+    }
+
+    // ==========================================
+    // 6. 核销逻辑
+    // ==========================================
+    function verifyTicket(ticketId, prizeName) {
+      if (confirm(`【⚠️ 工作人员核销确认】\n\n确定核销这张 [${prizeName}] 吗？\n核销后此券将立即失效且不可恢复！`)) {
+        const ticketIndex = localData.redemptions.findIndex(t => t.id === ticketId);
+        if (ticketIndex !== -1) {
+          localData.redemptions[ticketIndex].status = "已核销";
+          saveData();
+          alert("核销成功！");
+          renderUI();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
